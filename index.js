@@ -5,12 +5,18 @@ const OrderController = require('./src/controllers/OrderController');
 const CustomerController = require('./src/controllers/CustomerController');
 const OrderRoutes = require('./src/routes/orderRoutes')
 const CostumerRoutes = require('./src/routes/costumerRoutes')
+const dotenv = require('dotenv');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+dotenv.config({ path: './.env' });
+
+
+const dbHostConnect = process.env.DB_HOST_CONNECT;
+
 
 // Conectar ao MongoDB
-mongoose.connect('', {
+mongoose.connect(dbHostConnect, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
