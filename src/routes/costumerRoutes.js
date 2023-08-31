@@ -10,6 +10,17 @@ function CustomerRoutes() {
   // Create a new customer
   router.post('/customers', async (req, res) => {
     const customerData = req.body;
+  
+    // Validate customer data here before creating the customer
+    const { name, address, phone } = customerData;
+  
+    // Check if required fields are provided
+    if (!name || !address || !phone) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    // Add more validation rules as needed
+  
     try {
       const customer = await customerFacade.createCustomer(customerData);
       res.status(201).json(customer);
@@ -76,9 +87,20 @@ function CustomerRoutes() {
 
   // Update a customer by ID
   router.put('/customers/:customerId', async (req, res) => {
+    const customerId = req.params.customerId;
+    const updatedData = req.body;
+  
+    // Validate updated data here before updating the customer
+    const { name, address, phone } = updatedData;
+  
+    // Check if at least one field is provided for update
+    if (!name && !address && !phone) {
+      return res.status(400).json({ error: 'No valid update data provided' });
+    }
+  
+    // Add more validation rules as needed
+  
     try {
-      const customerId = req.params.customerId;
-      const updatedData = req.body;
       const updatedCustomer = await customerFacade.updateCustomer(customerId, updatedData);
       if (!updatedCustomer) {
         return res.status(404).json({ message: 'Customer not found' });

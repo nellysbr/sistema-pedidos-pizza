@@ -8,6 +8,29 @@ function OrderRoutes() {
   // Create a new order
   router.post('/orders', async (req, res) => {
     const orderData = req.body;
+  
+    // Validate order data here before creating the order
+    const { customer: customerId, pizzas: pizzaData } = orderData;
+  
+    // Ensure customerId is provided and is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
+      return res.status(400).json({ error: 'Invalid customer ID' });
+    }
+  
+    // Ensure pizzaData is an array
+    if (!Array.isArray(pizzaData)) {
+      return res.status(400).json({ error: 'Invalid pizza data' });
+    }
+  
+    // Ensure pizzaData contains valid pizza objects
+    const validPizzaKeys = ["size", "flavor", "price"];
+    for (const pizza of pizzaData) {
+      const pizzaKeys = Object.keys(pizza);
+      if (!validPizzaKeys.every(key => pizzaKeys.includes(key))) {
+        return res.status(400).json({ error: 'Invalid pizza data' });
+      }
+    }
+  
     try {
       const order = await orderFacade.createOrder(orderData);
       res.status(201).json(order);
@@ -44,17 +67,26 @@ function OrderRoutes() {
   });
 
   // Update an order by ID
-  router.put('/orders/:orderId', async (req, res) => {
+  router.put('/orders/:orderId/status', async (req, res) => {
     const orderId = req.params.orderId;
-    const updatedData = req.body;
+    const { status } = req.body;
+  
+    // Define valid status values
+    const validStatusValues = ["waiting", "in-progress", "completed"];
+  
+    // Check if the provided status value is valid
+    if (!validStatusValues.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+  
     try {
-      const updatedOrder = await orderFacade.updateOrder(orderId, updatedData);
+      const updatedOrder = await orderFacade.updateOrder(orderId, { status });
       if (!updatedOrder) {
         return res.status(404).json({ message: 'Order not found' });
       }
       res.json(updatedOrder);
     } catch (error) {
-      console.error('Error updating order:', error);
+      console.error('Error updating order status:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

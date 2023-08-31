@@ -4,13 +4,16 @@ const OrderObserver = require('../observers/OrderObserver'); // Import the Order
 class OrderController {
   constructor() {
     this.Order = modelFactory.getModel('Order');
-    this.orderObserver = new OrderObserver(); // Create an instance of OrderObserver
+    const orderObserver = new OrderObserver();
+    this.orderObserver = orderObserver // Create an instance of OrderObserver
   }
+  
 
   async createOrder(orderData) {
     try {
       const order = await this.Order.create(orderData);
       this.orderObserver.notify(order, 'created'); // Notify observers when an order is created
+      console.log(orderObserver.logNotifications);
       return order;
     } catch (error) {
       console.error('Error creating order:', error);
@@ -41,7 +44,7 @@ class OrderController {
   async updateOrder(orderId, updatedData) {
     try {
       const updatedOrder = await this.Order.findByIdAndUpdate(orderId, updatedData, { new: true });
-      this.orderObserver.notify(updatedOrder, 'updated'); // Notify observers when an order is updated
+      this.orderObserver.notify(updatedOrder);
       return updatedOrder;
     } catch (error) {
       console.error('Error updating order:', error);

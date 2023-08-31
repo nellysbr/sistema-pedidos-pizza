@@ -1,10 +1,13 @@
 const modelFactory = require('../models/ModelFactory');
+const OrderObserver = require('../observers/OrderObserver');
 
 class OrderFacade {
   constructor() {
     this.Order = modelFactory.getModel('Order');
     this.Customer = modelFactory.getModel('Customer');
     this.Pizza = modelFactory.getModel('Pizza');
+    const orderObserver = new OrderObserver();
+    this.orderObserver = orderObserver
   }
 
   async createOrder(orderData) {
@@ -26,6 +29,7 @@ class OrderFacade {
 
       // Create the order
       const order = await this.Order.create({ customer, pizzas, totalPrice });
+      this.orderObserver.notify(order, 'created');
 
       return order;
     } catch (error) {
@@ -37,6 +41,7 @@ class OrderFacade {
   async updateOrder(orderId, updatedData) {
     try {
       const updatedOrder = await this.Order.findByIdAndUpdate(orderId, updatedData, { new: true });
+      this.orderObserver.notify(updatedOrder);
       return updatedOrder;
     } catch (error) {
       console.error('Error updating order:', error);
@@ -47,6 +52,7 @@ class OrderFacade {
   async deleteOrder(orderId) {
     try {
       const deletedOrder = await this.Order.findByIdAndDelete(orderId);
+      this.orderObserver.notify(deletedOrder, 'deleted');
       return deletedOrder;
     } catch (error) {
       console.error('Error deleting order:', error);
