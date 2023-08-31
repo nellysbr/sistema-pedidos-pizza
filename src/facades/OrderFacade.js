@@ -2,12 +2,11 @@ const modelFactory = require('../models/ModelFactory');
 const OrderObserver = require('../observers/OrderObserver');
 
 class OrderFacade {
-  constructor() {
+  constructor(orderObserver) {
     this.Order = modelFactory.getModel('Order');
     this.Customer = modelFactory.getModel('Customer');
     this.Pizza = modelFactory.getModel('Pizza');
-    const orderObserver = new OrderObserver();
-    this.orderObserver = orderObserver
+    this.orderObserver = orderObserver;
   }
 
   async createOrder(orderData) {
@@ -29,7 +28,9 @@ class OrderFacade {
 
       // Create the order
       const order = await this.Order.create({ customer, pizzas, totalPrice });
-      this.orderObserver.notify(order, 'created');
+
+      // Notify the order observer
+      this.orderObserver.notify(order);
 
       return order;
     } catch (error) {
@@ -41,7 +42,10 @@ class OrderFacade {
   async updateOrder(orderId, updatedData) {
     try {
       const updatedOrder = await this.Order.findByIdAndUpdate(orderId, updatedData, { new: true });
+
+      // Notify the order observer
       this.orderObserver.notify(updatedOrder);
+
       return updatedOrder;
     } catch (error) {
       console.error('Error updating order:', error);
@@ -52,7 +56,10 @@ class OrderFacade {
   async deleteOrder(orderId) {
     try {
       const deletedOrder = await this.Order.findByIdAndDelete(orderId);
+
+      // Notify the order observer
       this.orderObserver.notify(deletedOrder, 'deleted');
+
       return deletedOrder;
     } catch (error) {
       console.error('Error deleting order:', error);
@@ -93,28 +100,32 @@ class OrderFacade {
   async getCustomerOrders(customerId) {
     try {
       const orders = await this.Order.find({ customer: customerId });
-  
+
       const ordersWithDetails = await Promise.all(
         orders.map(async order => {
           const orderData = order.toObject();
-  
+
           const detailedPizzas = await Promise.all(
             order.pizzas.map(async pizzaId => {
               const pizza = await this.Pizza.findById(pizzaId);
               return pizza.toObject();
             })
           );
-  
+
           orderData.pizzas = detailedPizzas;
           return orderData;
         })
       );
-  
+
       return ordersWithDetails;
     } catch (error) {
       console.error('Error fetching customer orders:', error);
       throw error;
     }
+  }
+
+  notify(order) {
+    this.orderObserver.notify(order);
   }
 }
 
