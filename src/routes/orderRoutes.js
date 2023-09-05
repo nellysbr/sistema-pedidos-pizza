@@ -1,9 +1,14 @@
 const express = require('express');
 const OrderFacade = require('../facades/OrderFacade'); // Import the OrderFacade
+const mongoose = require('mongoose');
+const OrderObserver = require('../observers/OrderObserver');
+
 
 function OrderRoutes() {
   const router = express.Router();
-  const orderFacade = new OrderFacade(); // Create an instance of OrderFacade
+  const orderObserver = new OrderObserver(); // Create an instance of OrderObserver
+  const orderFacade = new OrderFacade(orderObserver); // Create an instance of OrderFacade
+
 
   // Create a new order
   router.post('/orders', async (req, res) => {
