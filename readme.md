@@ -1,4 +1,4 @@
-Projeto exemplo para  exemplificar alguns padrões de design bem conhecidos, como o Facade, o Observer e o State.
+Projeto para  exemplificar alguns padrões de design bem conhecidos, como o Facade, o Observer e o State.
 
 O padrão Facade é usado para fornecer uma interface simplificada para os modelos Customer e Order. Isso torna mais fácil para os clientes dos facades interagirem com os modelos.
 
